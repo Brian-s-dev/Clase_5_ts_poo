@@ -4,7 +4,7 @@
     vida: number;
     constructor(nombre: string, edad: number) {
         this.nombre = nombre;
-        this.edad = edad;
+        this.essdad = edad;
         this.vida = 100;
     }
 
@@ -19,7 +19,7 @@
     decirNumeroFavorito(): number {
         return 1
     }
-}
+} 
  */
 /* 
 quiero definir una super persona, una supr persina tiene algo llamado superpoder, el superoder es un string descriptivo del poder. EJ: Telekinesis, volar, etc.
