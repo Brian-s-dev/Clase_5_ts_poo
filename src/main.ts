@@ -208,30 +208,41 @@ class Tienda {
         this.dinero = dinero_inicial;
     }
 
-    comprar(id_item: number, precio_unitario: number, cantidad: number, margen_esperado: number, managerGlobal: ItemManager): void {
+    obtenerItemPorId(id_item: number): ItemTienda | undefined {
+        const itemEnInventario = this.inventario.find(item => item.id === id_item);
+        return itemEnInventario
+    }
+
+    comprar(
+        id_item: number,
+        precio_unitario: number,
+        cantidad: number,
+        margen_esperado: number,
+        id_vendedor: number = 1
+    ): void {
         const costoTotal = precio_unitario * cantidad;
 
+        //Checkeo si tengo el dinero
         if (this.dinero < costoTotal) {
             console.log("Error: Dinero insuficiente");
             return;
         }
 
+        //Resto el dinero
         this.dinero -= costoTotal;
+        //Genero el registro de la compra
 
-        const idVendedorFicticio = 1;
-        const nuevaCompra = new Compra(this.generador_id_transacciones, cantidad, precio_unitario, id_item, idVendedorFicticio);
 
-        this.lista_compras.push(nuevaCompra);
-        this.generador_id_transacciones++;
+        this.registrarCompra(cantidad, precio_unitario, id_item, id_vendedor)
 
-        const itemEnInventario = this.inventario.find(item => item.id === id_item);
+
         const nuevoPrecioVenta = precio_unitario * margen_esperado;
-
+        const itemEnInventario = this.obtenerItemPorId(id_item)
         if (itemEnInventario) {
             itemEnInventario.precio = nuevoPrecioVenta;
             itemEnInventario.stock += cantidad;
         } else {
-            const itemBase = managerGlobal.obtenerPorId(id_item);
+            const itemBase = item_manager.obtenerPorId(id_item);
             if (itemBase) {
                 const nuevoItemTienda = new ItemTienda(itemBase.id, itemBase.titulo, itemBase.descripcion, nuevoPrecioVenta, cantidad);
                 this.inventario.push(nuevoItemTienda);
@@ -239,9 +250,17 @@ class Tienda {
         }
     }
 
+    registrarCompra(cantidad: number, precio_unitario: number, id_item: number, id_vendedor: number) {
+        const nuevaCompra = new Compra(this.generador_id_transacciones, cantidad, precio_unitario, id_item, id_vendedor);
+        this.lista_compras.push(nuevaCompra);
+        return this.generador_id_transacciones++
+    }
+
+
+
     vender(id_item: number, cantidad: number, id_comprador: number): void {
 
-        const itemEnInventario = this.inventario.find(item => item.id === id_item);
+        const itemEnInventario = this.obtenerItemPorId(id_item);
 
         if (!itemEnInventario) {
             console.log("Error: El producto no existe en nuestro inventario.");
@@ -257,8 +276,8 @@ class Tienda {
         this.dinero += ingresoTotal;
         itemEnInventario.stock -= cantidad;
 
+        //registrarVenta / registrarTransaccion
         const nuevaVenta = new Venta(this.generador_id_transacciones, cantidad, itemEnInventario.precio, id_item, id_comprador);
-
         this.lista_ventas.push(nuevaVenta);
         this.generador_id_transacciones++;
 
